@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.shortcuts import reverse
 
 CATEGORY_CHIOCES = (
     ('SU', 'Suit'),
@@ -19,9 +20,15 @@ class Item(models.Model):
     price = models.FloatField()
     category = models.CharField(choices=CATEGORY_CHIOCES, max_length=2)
     label = models.CharField(choices=LABEL_CHIOCES, max_length=1)
+    slug = models.SlugField()
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("item", kwargs={
+            'slug': self.slug
+        })
 
 class OrderItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
