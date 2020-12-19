@@ -21,6 +21,7 @@ class Item(models.Model):
     category = models.CharField(choices=CATEGORY_CHIOCES, max_length=2)
     label = models.CharField(choices=LABEL_CHIOCES, max_length=1)
     slug = models.SlugField()
+    description = models.TextField(default="This is the description of this product")
 
     def __str__(self):
         return self.title
