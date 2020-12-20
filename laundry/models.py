@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.shortcuts import reverse
+from phone_field import PhoneField
 
 CATEGORY_CHIOCES = (
     ('SU', 'Suit'),
@@ -60,12 +61,23 @@ class Order(models.Model):
     start_date = models.DateTimeField(auto_now_add=True)
     ordered_date = models.DateTimeField()
     ordered = models.BooleanField(default=False)
+    shipping_address = models.ForeignKey('ShippingAddress', on_delete=models.SET_NULL, blank=True, null=True)
 
     def get_total(self):
         total = 0
         for order_item in self.items.all():
             total += order_item.get_total_item_price()
         return total
+
+    def __str__(self):
+        return self.user.username
+
+class ShippingAddress(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    street_address = models.CharField(max_length=200)
+    apartment_address = models.CharField(max_length=200)
+    unique_name = models.CharField(max_length=200)
+    phone = PhoneField(default = 0000)
 
     def __str__(self):
         return self.user.username

@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
-from .models import Item,Order,OrderItem
+from .models import Item,Order,OrderItem,ShippingAddress
 from django.views.generic import ListView,DetailView,View
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import CheckoutForm
 
 @login_required
 def checkout(request):
@@ -113,3 +114,38 @@ class OrderSummaryView(LoginRequiredMixin,View):
         except ObjectDoesNotExist:
             messages.error(self.request,"You don't have an active order")
             return redirect('/')
+
+class CheckoutView(View):
+    def get(self, *args, **kwargs):
+        form = CheckoutForm()
+        context = {
+            'form':form
+        }
+        return render(self.request,"checkout-page.html",context)
+    def post(self, *args, **kwargs):
+        form = CheckoutForm(self.request.POST or None)
+        try:
+            order = Order.objects.get(user = self.request.user, ordered = False)
+            if form.is_valid():
+                street_address = form.cleaned_data.get('street_address')
+                apartment_address = form.cleaned_data.get('apartment_address')
+                unique_name = form.cleaned_data.get('unique_name')
+                phone = form.cleaned_data.get('phone')
+
+                shipping_address = ShippingAddress(
+                    user=self.request.user,
+                    street_address=street_address,
+                    apartment_address=apartment_address,
+                    unique_name=unique_name,
+                    phone=phone
+
+                )
+                shipping_address.save()
+                return redirect("checkout")
+            messages.warning(self.request,"Failed checkout")
+            return redirect("checkout")
+        except ObjectDoesNotExist:
+            messages.error(self.request,"You don't have an active order")
+            return redirect('order-summary')
+
+
