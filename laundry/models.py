@@ -36,6 +36,11 @@ class Item(models.Model):
             'slug': self.slug
         })
 
+    def get_remove_from_cart_url(self):
+        return reverse("remove-from-cart", kwargs={
+            'slug': self.slug
+        })
+
 class OrderItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
